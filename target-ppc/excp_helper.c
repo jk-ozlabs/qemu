@@ -878,13 +878,13 @@ static inline void do_rfi(CPUPPCState *env, target_ulong nip, target_ulong msr,
     CPUState *cs = CPU(ppc_env_get_cpu(env));
 
 #if defined(TARGET_PPC64)
+    msr = msr & msrm;
     if (msr_is_64bit(env, msr)) {
         nip = (uint64_t)nip;
-        msr &= (uint64_t)msrm;
     } else {
         nip = (uint32_t)nip;
-        msr = (uint32_t)(msr & msrm);
         if (keep_msrh) {
+	    msr &= 0xffffffff;
             msr |= env->msr & ~((uint64_t)0xFFFFFFFF);
         }
     }
