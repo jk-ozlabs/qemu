@@ -4836,7 +4836,7 @@ static void gen_tlbia(DisasContext *ctx)
 #if defined(CONFIG_USER_ONLY)
     gen_inval_exception(ctx, POWERPC_EXCP_PRIV_OPC);
 #else
-    if (unlikely(ctx->pr)) {
+    if (unlikely(ctx->pr || !ctx->hv)) {
         gen_inval_exception(ctx, POWERPC_EXCP_PRIV_OPC);
         return;
     }
@@ -4850,7 +4850,7 @@ static void gen_tlbiel(DisasContext *ctx)
 #if defined(CONFIG_USER_ONLY)
     gen_inval_exception(ctx, POWERPC_EXCP_PRIV_OPC);
 #else
-    if (unlikely(ctx->pr)) {
+    if (unlikely(ctx->pr || !ctx->hv)) {
         gen_inval_exception(ctx, POWERPC_EXCP_PRIV_OPC);
         return;
     }
@@ -4864,7 +4864,7 @@ static void gen_tlbie(DisasContext *ctx)
 #if defined(CONFIG_USER_ONLY)
     gen_inval_exception(ctx, POWERPC_EXCP_PRIV_OPC);
 #else
-    if (unlikely(ctx->pr)) {
+    if (unlikely(ctx->pr || !ctx->hv)) {
         gen_inval_exception(ctx, POWERPC_EXCP_PRIV_OPC);
         return;
     }
