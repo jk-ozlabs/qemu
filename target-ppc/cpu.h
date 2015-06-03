@@ -162,6 +162,8 @@ enum powerpc_excp_t {
     POWERPC_EXCP_970,
     /* POWER7 exception model           */
     POWERPC_EXCP_POWER7,
+    /* POWER8 exception model           */
+    POWERPC_EXCP_POWER8,
 #endif /* defined(TARGET_PPC64) */
 };
 
