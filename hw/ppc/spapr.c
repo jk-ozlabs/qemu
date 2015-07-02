@@ -118,7 +118,7 @@ static XICSState *xics_system_init(MachineState *machine,
         Error *err = NULL;
 
         if (machine_kernel_irqchip_allowed(machine)) {
-            icp = try_create_xics(TYPE_KVM_XICS, nr_servers, nr_irqs, &err);
+            icp = try_create_xics(TYPE_XICS_SPAPR_KVM, nr_servers, nr_irqs, &err);
         }
         if (machine_kernel_irqchip_required(machine) && !icp) {
             error_report("kernel_irqchip requested but unavailable: %s",
@@ -127,7 +127,7 @@ static XICSState *xics_system_init(MachineState *machine,
     }
 
     if (!icp) {
-        icp = try_create_xics(TYPE_XICS, nr_servers, nr_irqs, &error_abort);
+        icp = try_create_xics(TYPE_XICS_SPAPR, nr_servers, nr_irqs, &error_abort);
     }
 
     return icp;
@@ -1510,7 +1510,7 @@ static void ppc_spapr_init(MachineState *machine)
     spapr->icp = xics_system_init(machine,
                                   DIV_ROUND_UP(max_cpus * kvmppc_smt_threads(),
                                                smp_threads),
-                                  XICS_IRQS);
+                                  XICS_IRQS_SPAPR);
 
     /* init CPUs */
     if (machine->cpu_model == NULL) {
