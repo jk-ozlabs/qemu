@@ -90,6 +90,12 @@ static void xics_common_reset(DeviceState *d)
     }
 }
 
+void xics_add_ics(XICSState *xics, ICSState *ics)
+{
+    ics->xics = xics;
+    QLIST_INSERT_HEAD(&xics->ics, ics, list);
+}
+
 static void xics_prop_get_nr_irqs(Object *obj, Visitor *v,
                                   void *opaque, const char *name, Error **errp)
 {
