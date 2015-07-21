@@ -462,7 +462,7 @@ static void spapr_vio_busdev_realize(DeviceState *qdev, Error **errp)
         dev->qdev.id = id;
     }
 
-    dev->irq = xics_spapr_alloc(spapr->icp, 0, dev->irq, false);
+    dev->irq = xics_spapr_alloc(spapr->xics, 0, dev->irq, false);
     if (!dev->irq) {
         error_setg(errp, "can't allocate IRQ");
         return;

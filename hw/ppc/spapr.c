@@ -112,25 +112,25 @@ static XICSState *try_create_xics(const char *type, int nr_servers,
 static XICSState *xics_system_init(MachineState *machine,
                                    int nr_servers, int nr_irqs)
 {
-    XICSState *icp = NULL;
+    XICSState *xics = NULL;
 
     if (kvm_enabled()) {
         Error *err = NULL;
 
         if (machine_kernel_irqchip_allowed(machine)) {
-            icp = try_create_xics(TYPE_XICS_SPAPR_KVM, nr_servers, nr_irqs, &err);
+            xics = try_create_xics(TYPE_XICS_SPAPR_KVM, nr_servers, nr_irqs, &err);
         }
-        if (machine_kernel_irqchip_required(machine) && !icp) {
+        if (machine_kernel_irqchip_required(machine) && !xics) {
             error_report("kernel_irqchip requested but unavailable: %s",
                          error_get_pretty(err));
         }
     }
 
-    if (!icp) {
-        icp = try_create_xics(TYPE_XICS_SPAPR, nr_servers, nr_irqs, &error_abort);
+    if (!xics) {
+        xics = try_create_xics(TYPE_XICS_SPAPR, nr_servers, nr_irqs, &error_abort);
     }
 
-    return icp;
+    return xics;
 }
 
 static int spapr_fixup_cpu_smt_dt(void *fdt, int offset, PowerPCCPU *cpu,
@@ -1425,7 +1425,7 @@ static void spapr_cpu_init(sPAPRMachineState *spapr, PowerPCCPU *cpu)
         }
     }
 
-    xics_cpu_setup(spapr->icp, cpu);
+    xics_cpu_setup(spapr->xics, cpu);
 
     qemu_register_reset(spapr_cpu_reset, cpu);
 }
@@ -1507,10 +1507,10 @@ static void ppc_spapr_init(MachineState *machine)
     }
 
     /* Set up Interrupt Controller before we create the VCPUs */
-    spapr->icp = xics_system_init(machine,
-                                  DIV_ROUND_UP(max_cpus * kvmppc_smt_threads(),
-                                               smp_threads),
-                                  XICS_IRQS_SPAPR);
+    spapr->xics = xics_system_init(machine,
+                                   DIV_ROUND_UP(max_cpus * kvmppc_smt_threads(),
+                                                smp_threads),
+                                   XICS_IRQS_SPAPR);
 
     /* init CPUs */
     if (machine->cpu_model == NULL) {
