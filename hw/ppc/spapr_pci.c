@@ -351,7 +351,7 @@ static void rtas_ibm_change_msi(PowerPCCPU *cpu, sPAPRMachineState *spapr,
     }
 
     /* Allocate MSIs */
-    irq = xics_spapr_alloc_block(spapr->xics, 0, req_num, false,
+    irq = xics_spapr_alloc_block(spapr->xics, req_num, false,
                            ret_intr_type == RTAS_TYPE_MSI);
     if (!irq) {
         error_report("Cannot allocate MSIs for device %x", config_addr);
@@ -1351,7 +1351,7 @@ static void spapr_phb_realize(DeviceState *dev, Error **errp)
     for (i = 0; i < PCI_NUM_PINS; i++) {
         uint32_t irq;
 
-        irq = xics_spapr_alloc_block(spapr->xics, 0, 1, true, false);
+        irq = xics_spapr_alloc_block(spapr->xics, 1, true, false);
         if (!irq) {
             error_setg(errp, "spapr_allocate_lsi failed");
             return;
