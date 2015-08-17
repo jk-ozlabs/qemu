@@ -1416,15 +1416,8 @@ static void spapr_cpu_init(sPAPRMachineState *spapr, PowerPCCPU *cpu)
     /* Set time-base frequency to 512 MHz */
     cpu_ppc_tb_init(env, TIMEBASE_FREQ);
 
-    /* PAPR always has exception vectors in RAM not ROM. To ensure this,
-     * MSR[IP] should never be set.
-     */
-    env->msr_mask &= ~(1 << 6);
-
-    /* Tell KVM that we're in PAPR mode */
-    if (kvm_enabled()) {
-        kvmppc_set_papr(cpu);
-    }
+    /* Enable PAPR mode in TCG or KVM */
+    cpu_ppc_set_papr(cpu);
 
     if (cpu->max_compat) {
         if (ppc_set_compat(cpu, cpu->max_compat) < 0) {
@@ -1529,6 +1522,7 @@ static void ppc_spapr_init(MachineState *machine)
             fprintf(stderr, "Unable to find PowerPC CPU definition\n");
             exit(1);
         }
+
         spapr_cpu_init(spapr, cpu);
     }
 

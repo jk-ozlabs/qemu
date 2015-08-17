@@ -8422,8 +8422,43 @@ POWERPC_FAMILY(POWER8)(ObjectClass *oc, void *data)
     pcc->interrupts_big_endian = ppc_cpu_interrupts_big_endian_lpcr;
     pcc->threads_per_core = 8;
 }
-#endif /* defined (TARGET_PPC64) */
 
+#if !defined(CONFIG_USER_ONLY)
+
+void cpu_ppc_set_papr(PowerPCCPU *cpu)
+{
+    CPUPPCState *env = &cpu->env;
+    ppc_spr_t *lpcr = &env->spr_cb[SPR_LPCR];
+
+    /* PAPR always has exception vectors in RAM not ROM. To ensure this,
+     * MSR[IP] should never be set.
+     *
+     * We also disallow setting of MSR_HV
+     */
+    env->msr_mask &= ~((1ull << MSR_EP) | MSR_HVB);
+
+    /* Set emulated LPCR to not send interrupts to hypervisor. Note that
+     * under KVM, the actual HW LPCR will be set differently by KVM itself,
+     * the settings below ensure proper operations with TCG in absence of
+     * a real hypervisor
+     */
+    lpcr->default_value &= ~(LPCR_VPM0 | LPCR_VPM1 | LPCR_ISL | LPCR_KBV);
+    lpcr->default_value |= LPCR_LPES0 | LPCR_LPES1;
+
+    /* We should be followed by a CPU reset but update the active value
+     * just in case...
+     */
+    env->spr[SPR_LPCR] = lpcr->default_value;
+
+    /* Tell KVM that we're in PAPR mode */
+    if (kvm_enabled()) {
+        kvmppc_set_papr(cpu);
+    }
+}
+
+#endif /* !defined(CONFIG_USER_ONLY) */
+
+#endif /* defined (TARGET_PPC64) */
 
 /*****************************************************************************/
 /* Generic CPU instantiation routine                                         */
