@@ -215,4 +215,6 @@ void xics_set_nr_servers(XICSState *icp, uint32_t nr_servers, Error **errp);
 ICSState *xics_find_source(XICSState *icp, int irq);
 void xics_add_ics(XICSState *xics, ICSState *ics);
 
+void hmp_info_xics(Monitor *mon, const QDict *qdict);
+
 #endif /* __XICS_H__ */

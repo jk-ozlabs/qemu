@@ -75,6 +75,9 @@
 #include "qapi/qmp-event.h"
 #include "qapi-event.h"
 #include "sysemu/block-backend.h"
+#if defined(TARGET_PPC64)
+#include "hw/ppc/xics.h"
+#endif
 
 /* for hmp_info_irq/pic */
 #if defined(TARGET_SPARC)
@@ -2604,6 +2607,15 @@ static mon_cmd_t info_cmds[] = {
 #else
         .mhandler.cmd = hmp_info_pic,
 #endif
+    },
+#endif
+#if defined(TARGET_PPC64)
+    {
+        .name       = "xics",
+        .args_type  = "",
+        .params     = "",
+        .help       = "show XICS internal state",
+        .mhandler.cmd = hmp_info_xics,
     },
 #endif
     {
