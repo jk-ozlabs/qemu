@@ -29,6 +29,7 @@ void ppc_hash64_store_hpte(CPUPPCState *env, target_ulong index,
 #define SLB_VSID_B_256M         0x0000000000000000ULL
 #define SLB_VSID_B_1T           0x4000000000000000ULL
 #define SLB_VSID_VSID           0x3FFFFFFFFFFFF000ULL
+#define SLB_VSID_VRMA           (0x0001FFFFFF000000ULL | SLB_VSID_B_1T)
 #define SLB_VSID_PTEM           (SLB_VSID_B | SLB_VSID_VSID)
 #define SLB_VSID_KS             0x0000000000000800ULL
 #define SLB_VSID_KP             0x0000000000000400ULL
