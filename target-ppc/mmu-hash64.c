@@ -348,9 +348,31 @@ void ppc_hash64_stop_access(uint64_t token)
     }
 }
 
+/* Returns the effective page shift or 0. MPSS isn't supported yet so
+ * this will always be the slb_pshift or 0
+ */
+static uint32_t ppc_hash64_pte_size_decode(uint64_t pte1, uint32_t slb_pshift)
+{
+    switch(slb_pshift) {
+    case 12:
+        return 12;
+    case 16:
+        if ((pte1 & 0xf000) == 0x1000) {
+            return 16;
+        }
+        return 0;
+    case 24:
+        if ((pte1 & 0xff000) == 0) {
+            return 24;
+        }
+        return 0;
+    }
+    return 0;
+}
+
 static hwaddr ppc_hash64_pteg_search(CPUPPCState *env, hwaddr hash,
-                                     bool secondary, target_ulong ptem,
-                                     ppc_hash_pte64_t *pte)
+                                     uint32_t slb_pshift, bool secondary,
+                                     target_ulong ptem, ppc_hash_pte64_t *pte)
 {
     int i;
     uint64_t token;
@@ -369,6 +391,13 @@ static hwaddr ppc_hash64_pteg_search(CPUPPCState *env, hwaddr hash,
         if ((pte0 & HPTE64_V_VALID)
             && (secondary == !!(pte0 & HPTE64_V_SECONDARY))
             && HPTE64_V_COMPARE(pte0, ptem)) {
+            uint32_t pshift = ppc_hash64_pte_size_decode(pte1, slb_pshift);
+            if (pshift == 0) {
+                continue;
+            }
+            /* We don't do anything with pshift yet as qemu TLB only deals
+             * with 4K pages anyway
+             */
             pte->pte0 = pte0;
             pte->pte1 = pte1;
             ppc_hash64_stop_access(token);
@@ -382,7 +411,7 @@ static hwaddr ppc_hash64_pteg_search(CPUPPCState *env, hwaddr hash,
     return -1;
 }
 
-static uint64_t ppc_hash64_page_shift(ppc_slb_t *slb)
+static uint64_t ppc_hash64_page_shift(CPUPPCState *env, ppc_slb_t *slb)
 {
     uint64_t epnshift;
 
@@ -392,7 +421,8 @@ static uint64_t ppc_hash64_page_shift(ppc_slb_t *slb)
      * encoded in the PTE */
     if ((slb->vsid & SLB_VSID_LLP_MASK) == SLB_VSID_4K) {
         epnshift = TARGET_PAGE_BITS;
-    } else if ((slb->vsid & SLB_VSID_LLP_MASK) == SLB_VSID_64K) {
+    } else if ((slb->vsid & SLB_VSID_LLP_MASK) == SLB_VSID_64K &&
+               (env->mmu_model & POWERPC_MMU_64K)) {
         epnshift = TARGET_PAGE_BITS_64K;
     } else {
         epnshift = TARGET_PAGE_BITS_16M;
@@ -408,7 +438,7 @@ static hwaddr ppc_hash64_htab_lookup(CPUPPCState *env,
     hwaddr hash;
     uint64_t vsid, epnshift, epnmask, epn, ptem;
 
-    epnshift = ppc_hash64_page_shift(slb);
+    epnshift = ppc_hash64_page_shift(env, slb);
     epnmask = ~((1ULL << epnshift) - 1);
 
     if (slb->vsid & SLB_VSID_B) {
@@ -436,7 +466,7 @@ static hwaddr ppc_hash64_htab_lookup(CPUPPCState *env,
             " vsid=" TARGET_FMT_lx " ptem=" TARGET_FMT_lx
             " hash=" TARGET_FMT_plx "\n",
             env->htab_base, env->htab_mask, vsid, ptem,  hash);
-    pte_offset = ppc_hash64_pteg_search(env, hash, 0, ptem, pte);
+    pte_offset = ppc_hash64_pteg_search(env, hash, epnshift, 0, ptem, pte);
 
     if (pte_offset == -1) {
         /* Secondary PTEG lookup */
@@ -446,14 +476,14 @@ static hwaddr ppc_hash64_htab_lookup(CPUPPCState *env,
                 " hash=" TARGET_FMT_plx "\n", env->htab_base,
                 env->htab_mask, vsid, ptem, ~hash);
 
-        pte_offset = ppc_hash64_pteg_search(env, ~hash, 1, ptem, pte);
+        pte_offset = ppc_hash64_pteg_search(env, ~hash, epnshift, 1, ptem, pte);
     }
 
     return pte_offset;
 }
 
-static hwaddr ppc_hash64_pte_raddr(ppc_slb_t *slb, ppc_hash_pte64_t pte,
-                                   target_ulong eaddr)
+static hwaddr ppc_hash64_pte_raddr(CPUPPCState *env, ppc_slb_t *slb,
+                                   ppc_hash_pte64_t pte, target_ulong eaddr)
 {
     hwaddr mask;
     int target_page_bits;
@@ -461,7 +491,7 @@ static hwaddr ppc_hash64_pte_raddr(ppc_slb_t *slb, ppc_hash_pte64_t pte,
     /*
      * We support 4K, 64K and 16M now
      */
-    target_page_bits = ppc_hash64_page_shift(slb);
+    target_page_bits = ppc_hash64_page_shift(env, slb);
     mask = (1ULL << target_page_bits) - 1;
     return (rpn & ~mask) | (eaddr & mask);
 }
@@ -699,7 +729,7 @@ int ppc_hash64_handle_mmu_fault(PowerPCCPU *cpu, target_ulong eaddr,
 
     /* 7. Determine the real address from the PTE */
 
-    raddr = ppc_hash64_pte_raddr(&slb, pte, eaddr);
+    raddr = ppc_hash64_pte_raddr(env, &slb, pte, eaddr);
 
     tlb_set_page(cs, eaddr & TARGET_PAGE_MASK, raddr & TARGET_PAGE_MASK,
                  prot, mmu_idx, TARGET_PAGE_SIZE);
@@ -752,7 +782,7 @@ hwaddr ppc_hash64_get_phys_page_debug(CPUPPCState *env, target_ulong addr)
         return -1;
     }
 
-    return ppc_hash64_pte_raddr(&slb, pte, addr) & TARGET_PAGE_MASK;
+    return ppc_hash64_pte_raddr(env, &slb, pte, addr) & TARGET_PAGE_MASK;
 }
 
 void ppc_hash64_store_hpte(CPUPPCState *env,

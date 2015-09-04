@@ -56,7 +56,6 @@ static target_ulong compute_tlbie_rb(target_ulong v, target_ulong r,
     va_low &= 0x7ff;
     if (v & HPTE64_V_LARGE) {
         rb |= 1;                         /* L field */
-#if 0 /* Disable that P7 specific bit for now */
         if (r & 0xff000) {
             /* non-16MB large page, must be 64k */
             /* (masks depend on page size) */
@@ -64,7 +63,6 @@ static target_ulong compute_tlbie_rb(target_ulong v, target_ulong r,
             rb |= (va_low & 0x7f) << 16; /* 7b of VA in AVA/LP field */
             rb |= (va_low & 0xfe);       /* AVAL field */
         }
-#endif
     } else {
         /* 4kB page */
         rb |= (va_low & 0x7ff) << 12;   /* remaining 11b of AVA */
@@ -98,14 +96,12 @@ static target_ulong h_enter(PowerPCCPU *cpu, sPAPRMachineState *spapr,
     target_ulong index;
     uint64_t token;
 
-    /* only handle 4k and 16M pages for now */
+    /* Handle non-4K pages */
     if (pteh & HPTE64_V_LARGE) {
-#if 0 /* We don't support 64k pages yet */
         if ((ptel & 0xf000) == 0x1000) {
             /* 64k page */
-        } else
-#endif
-        if ((ptel & 0xff000) == 0) {
+            page_shift = 16;
+        } else if ((ptel & 0xff000) == 0) {
             /* 16M page */
             page_shift = 24;
             /* lowest AVA bit must be 0 for 16M pages */
