@@ -8059,6 +8059,22 @@ static void gen_spr_power8_rpr(CPUPPCState *env)
 #endif
 }
 
+static void gen_spr_power8_dbell(CPUPPCState *env)
+{
+#if !defined(CONFIG_USER_ONLY)
+    spr_register_hv(env, SPR_DPDES, "DPDES",
+                    SPR_NOACCESS, SPR_NOACCESS,
+                    &spr_read_generic, SPR_NOACCESS,
+                    &spr_read_generic, &spr_write_generic,
+                    0);
+    spr_register_hv(env, SPR_DHDES, "DHDES",
+                    SPR_NOACCESS, SPR_NOACCESS,
+                    SPR_NOACCESS, SPR_NOACCESS,
+                    &spr_read_generic, &spr_write_generic,
+                    0);
+#endif
+}
+
 static void init_proc_book3s_64(CPUPPCState *env, int version)
 {
     gen_spr_ne_601(env);
@@ -8110,6 +8126,7 @@ static void init_proc_book3s_64(CPUPPCState *env, int version)
         gen_spr_power8_tm(env);
         gen_spr_vtb(env);
         gen_spr_power8_rpr(env);
+        gen_spr_power8_dbell(env);
     }
     if (version < BOOK3S_CPU_POWER8) {
         gen_spr_book3s_dbg(env);
