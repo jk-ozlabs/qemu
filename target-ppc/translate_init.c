@@ -8226,6 +8226,10 @@ static void gen_spr_power8_book4(CPUPPCState *env)
                     &spr_read_generic, SPR_NOACCESS,
                     &spr_read_generic, &spr_write_generic,
                     0);
+    spr_register(env, SPR_ACOP, "ACOP",
+                 SPR_NOACCESS, SPR_NOACCESS,
+                 &spr_read_generic, &spr_write_generic,
+                 0);
 #endif
 }
 
