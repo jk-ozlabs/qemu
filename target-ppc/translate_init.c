@@ -8614,6 +8614,7 @@ void cpu_ppc_set_papr(PowerPCCPU *cpu)
 {
     CPUPPCState *env = &cpu->env;
     ppc_spr_t *lpcr = &env->spr_cb[SPR_LPCR];
+    ppc_spr_t *amor = &env->spr_cb[SPR_AMOR];
 
     /* PAPR always has exception vectors in RAM not ROM. To ensure this,
      * MSR[IP] should never be set.
@@ -8649,6 +8650,9 @@ void cpu_ppc_set_papr(PowerPCCPU *cpu)
      * just in case...
      */
     env->spr[SPR_LPCR] = lpcr->default_value;
+
+    /* Set a full AMOR so guest can use the AMR as it sees fit */
+    env->spr[SPR_AMOR] = amor->default_value = 0xffffffffffffffffull;
 
     /* Tell KVM that we're in PAPR mode */
     if (kvm_enabled()) {
