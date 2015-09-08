@@ -3125,7 +3125,6 @@ static const MonitorDef monitor_defs[] = {
     { "tbu", 0, &monitor_get_tbu, },
     { "tbl", 0, &monitor_get_tbl, },
     /* Segment registers */
-    { "sdr1", offsetof(CPUPPCState, spr[SPR_SDR1]) },
     { "sr0", offsetof(CPUPPCState, sr[0]) },
     { "sr1", offsetof(CPUPPCState, sr[1]) },
     { "sr2", offsetof(CPUPPCState, sr[2]) },
@@ -3142,79 +3141,6 @@ static const MonitorDef monitor_defs[] = {
     { "sr13", offsetof(CPUPPCState, sr[13]) },
     { "sr14", offsetof(CPUPPCState, sr[14]) },
     { "sr15", offsetof(CPUPPCState, sr[15]) },
-    /* Too lazy to put BATs... */
-    { "pvr", offsetof(CPUPPCState, spr[SPR_PVR]) },
-
-    { "srr0", offsetof(CPUPPCState, spr[SPR_SRR0]) },
-    { "srr1", offsetof(CPUPPCState, spr[SPR_SRR1]) },
-    { "dar", offsetof(CPUPPCState, spr[SPR_DAR]) },
-    { "dsisr", offsetof(CPUPPCState, spr[SPR_DSISR]) },
-    { "cfar", offsetof(CPUPPCState, spr[SPR_CFAR]) },
-    { "sprg0", offsetof(CPUPPCState, spr[SPR_SPRG0]) },
-    { "sprg1", offsetof(CPUPPCState, spr[SPR_SPRG1]) },
-    { "sprg2", offsetof(CPUPPCState, spr[SPR_SPRG2]) },
-    { "sprg3", offsetof(CPUPPCState, spr[SPR_SPRG3]) },
-    { "sprg4", offsetof(CPUPPCState, spr[SPR_SPRG4]) },
-    { "sprg5", offsetof(CPUPPCState, spr[SPR_SPRG5]) },
-    { "sprg6", offsetof(CPUPPCState, spr[SPR_SPRG6]) },
-    { "sprg7", offsetof(CPUPPCState, spr[SPR_SPRG7]) },
-    { "pid", offsetof(CPUPPCState, spr[SPR_BOOKE_PID]) },
-    { "csrr0", offsetof(CPUPPCState, spr[SPR_BOOKE_CSRR0]) },
-    { "csrr1", offsetof(CPUPPCState, spr[SPR_BOOKE_CSRR1]) },
-    { "esr", offsetof(CPUPPCState, spr[SPR_BOOKE_ESR]) },
-    { "dear", offsetof(CPUPPCState, spr[SPR_BOOKE_DEAR]) },
-    { "mcsr", offsetof(CPUPPCState, spr[SPR_BOOKE_MCSR]) },
-    { "tsr", offsetof(CPUPPCState, spr[SPR_BOOKE_TSR]) },
-    { "tcr", offsetof(CPUPPCState, spr[SPR_BOOKE_TCR]) },
-    { "vrsave", offsetof(CPUPPCState, spr[SPR_VRSAVE]) },
-    { "pir", offsetof(CPUPPCState, spr[SPR_BOOKE_PIR]) },
-    { "mcsrr0", offsetof(CPUPPCState, spr[SPR_BOOKE_MCSRR0]) },
-    { "mcsrr1", offsetof(CPUPPCState, spr[SPR_BOOKE_MCSRR1]) },
-    { "decar", offsetof(CPUPPCState, spr[SPR_BOOKE_DECAR]) },
-    { "ivpr", offsetof(CPUPPCState, spr[SPR_BOOKE_IVPR]) },
-    { "epcr", offsetof(CPUPPCState, spr[SPR_BOOKE_EPCR]) },
-    { "sprg8", offsetof(CPUPPCState, spr[SPR_BOOKE_SPRG8]) },
-    { "ivor0", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR0]) },
-    { "ivor1", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR1]) },
-    { "ivor2", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR2]) },
-    { "ivor3", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR3]) },
-    { "ivor4", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR4]) },
-    { "ivor5", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR5]) },
-    { "ivor6", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR6]) },
-    { "ivor7", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR7]) },
-    { "ivor8", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR8]) },
-    { "ivor9", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR9]) },
-    { "ivor10", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR10]) },
-    { "ivor11", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR11]) },
-    { "ivor12", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR12]) },
-    { "ivor13", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR13]) },
-    { "ivor14", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR14]) },
-    { "ivor15", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR15]) },
-    { "ivor32", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR32]) },
-    { "ivor33", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR33]) },
-    { "ivor34", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR34]) },
-    { "ivor35", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR35]) },
-    { "ivor36", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR36]) },
-    { "ivor37", offsetof(CPUPPCState, spr[SPR_BOOKE_IVOR37]) },
-    { "mas0", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS0]) },
-    { "mas1", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS1]) },
-    { "mas2", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS2]) },
-    { "mas3", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS3]) },
-    { "mas4", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS4]) },
-    { "mas6", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS6]) },
-    { "mas7", offsetof(CPUPPCState, spr[SPR_BOOKE_MAS7]) },
-    { "mmucfg", offsetof(CPUPPCState, spr[SPR_MMUCFG]) },
-    { "tlb0cfg", offsetof(CPUPPCState, spr[SPR_BOOKE_TLB0CFG]) },
-    { "tlb1cfg", offsetof(CPUPPCState, spr[SPR_BOOKE_TLB1CFG]) },
-    { "epr", offsetof(CPUPPCState, spr[SPR_BOOKE_EPR]) },
-    { "eplc", offsetof(CPUPPCState, spr[SPR_BOOKE_EPLC]) },
-    { "epsc", offsetof(CPUPPCState, spr[SPR_BOOKE_EPSC]) },
-    { "svr", offsetof(CPUPPCState, spr[SPR_E500_SVR]) },
-    { "mcar", offsetof(CPUPPCState, spr[SPR_Exxx_MCAR]) },
-    { "pid1", offsetof(CPUPPCState, spr[SPR_BOOKE_PID1]) },
-    { "pid2", offsetof(CPUPPCState, spr[SPR_BOOKE_PID2]) },
-    { "hid0", offsetof(CPUPPCState, spr[SPR_HID0]) },
-
 #elif defined(TARGET_SPARC)
     { "g0", offsetof(CPUSPARCState, gregs[0]) },
     { "g1", offsetof(CPUSPARCState, gregs[1]) },
@@ -3358,6 +3284,22 @@ static int get_monitor_def(target_long *pval, const char *name)
             return 0;
         }
     }
+#ifdef TARGET_PPC
+    /* On ppc, search through the SPRs so we can print any of them */
+    {
+        CPUArchState *env = mon_get_cpu_env();
+        ppc_spr_t *spr_cb = env->spr_cb;
+        int i;
+
+        for (i = 0; i < 1024; i++) {
+            if (!spr_cb[i].name || strcasecmp(name, spr_cb[i].name)) {
+                continue;
+            }
+            *pval = env->spr[i];
+            return 0;
+        }
+    }
+#endif /* TARGET_PPC */
     return -1;
 }
 
