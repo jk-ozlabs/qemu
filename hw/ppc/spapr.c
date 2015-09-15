@@ -1072,6 +1072,7 @@ static int spapr_vga_init(PCIBus *pci_bus)
     case VGA_DEVICE:
         return true;
     case VGA_STD:
+    case VGA_VIRTIO:
         return pci_vga_init(pci_bus) != NULL;
     default:
         fprintf(stderr, "This vga model is not supported,"
